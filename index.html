@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ListingForge — SEO Listing Generator for Etsy, Amazon & eBay Sellers</title>
+<meta name="description" content="Paste your product, get a marketplace-ready listing: SEO title, benefit bullets, and ranked keyword tags for Etsy, Amazon, or eBay. Free client-side generator, plus optional AI copy with your own key." />
+<meta name="theme-color" content="#0f1020" />
+
+<!-- OpenGraph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="ListingForge — SEO Listings for Etsy, Amazon & eBay" />
+<meta property="og:description" content="Turn product notes into a ranked, SEO-optimized listing: title, bullets, and keyword tags tuned per marketplace. Free, runs in your browser." />
+<meta property="og:image" content="https://listingforge.app/og.png" />
+<meta property="og:url" content="https://listingforge.app/" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="ListingForge — SEO Listing Generator" />
+<meta name="twitter:description" content="Paste a product, get a marketplace-ready listing with ranked keyword tags. Free in-browser." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<!-- JSON-LD FAQPage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is ListingForge free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. The free tier runs entirely in your browser and builds a complete SEO listing skeleton — title, bullets, and ranked keyword tags — from your product notes, with no key and no signup. The optional Pro mode lets you paste your own GLM API key to have AI write the polished copy."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does ListingForge support Etsy, Amazon, and eBay?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. The generator applies each marketplace's rules: Etsy (140-char titles, 13 tags up to 20 chars each), Amazon (200-char titles, 5 bullets, backend search terms), and eBay (80-char titles and item-specific keywords)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where does my product data and API key go?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nowhere. There is no backend. The free generator runs 100% in your browser. If you use Pro mode, your key is stored only in your browser and is sent only to the official z.ai GLM endpoint over HTTPS — never to us."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does the keyword ranking work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "ListingForge extracts single and multi-word phrases from your input, scores them by frequency, position, specificity (length), and buyer-intent signals, then dedupes and trims them to each marketplace's tag rules so the highest-relevance terms rank first."
+      }
+    }
+  ]
+}
+</script>
+
+<style>
+:root{
+  --ink:#0f1020;
+  --ink-2:#171834;
+  --paper:#f6f4ef;
+  --paper-2:#efece4;
+  --violet:#6d5cff;
+  --violet-2:#8b7bff;
+  --coral:#ff6b5d;
+  --coral-2:#ff8a7e;
+  --mint:#19d3a2;
+  --gold:#ffc24b;
+  --line:rgba(15,16,32,.10);
+  --line-strong:rgba(15,16,32,.18);
+  --muted:#5d5b6e;
+  --shadow-lg:0 30px 70px -28px rgba(20,18,60,.45);
+  --shadow-sm:0 4px 22px -10px rgba(20,18,60,.30);
+  --r:18px;
+  --maxw:1000px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:'Inter',system-ui,sans-serif;
+  color:var(--ink);
+  background:var(--paper);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3,.display{font-family:'Space Grotesk','Inter',sans-serif;letter-spacing:-.02em;}
+.mono{font-family:'JetBrains Mono',monospace;}
+a{color:inherit}
+button{font-family:inherit;cursor:pointer}
+
+/* ---------- layout ---------- */
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px;}
+section{position:relative}
+
+/* ---------- top nav ---------- */
+.nav{
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:saturate(1.4) blur(12px);
+  background:rgba(246,244,239,.72);
+  border-bottom:1px solid var(--line);
+}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;}
+.brand{display:flex;align-items:center;gap:11px;font-family:'Space Grotesk';font-weight:700;font-size:18px;}
+.brand .mark{
+  width:30px;height:30px;border-radius:9px;
+  background:conic-gradient(from 200deg,var(--violet),var(--coral),var(--gold),var(--mint),var(--violet));
+  box-shadow:0 6px 18px -6px var(--violet);
+  position:relative;
+}
+.brand .mark::after{content:"";position:absolute;inset:6px;border-radius:5px;background:var(--paper);}
+.nav-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 16px;border-radius:999px;font-weight:600;font-size:14px;
+  background:var(--ink);color:var(--paper);border:0;text-decoration:none;
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 12px 24px -10px rgba(15,16,32,.6);}
+.nav-links{display:flex;gap:22px;font-size:14px;font-weight:500;color:var(--muted);}
+.nav-links a{text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--ink)}
+@media(max-width:720px){.nav-links{display:none}}
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;
+  padding:72px 0 60px;
+  background:
+    radial-gradient(900px 500px at 80% -10%, rgba(109,92,255,.18), transparent 60%),
+    radial-gradient(700px 460px at 0% 0%, rgba(255,107,93,.14), transparent 55%),
+    linear-gradient(180deg,#101127 0%,#15163a 55%,#1a1b46 100%);
+  color:#f3f1ff;
+  overflow:hidden;
+}
+#constellation{position:absolute;inset:0;width:100%;height:100%;display:block;}
+.hero .wrap{position:relative;z-index:2;}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center;}
+@media(max-width:840px){.hero-grid{grid-template-columns:1fr;gap:26px}}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:'JetBrains Mono';font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  color:#c9c4ff;background:rgba(139,123,255,.12);border:1px solid rgba(139,123,255,.30);
+  padding:7px 13px;border-radius:999px;margin-bottom:22px;
+}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint);}
+.hero h1{
+  font-size:clamp(36px,6vw,62px);line-height:1.02;margin:0 0 18px;font-weight:700;
+}
+.hero h1 .grad{
+  background:linear-gradient(105deg,var(--coral-2),var(--gold) 45%,var(--mint));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero p.lede{font-size:clamp(16px,2vw,19px);line-height:1.55;color:#cfcce8;max-width:50ch;margin:0 0 28px;}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;justify-content:center;
+  padding:14px 24px;border-radius:13px;font-weight:600;font-size:15px;border:0;text-decoration:none;
+  transition:transform .2s ease,box-shadow .25s ease,background .2s ease;
+}
+.btn-primary{
+  background:linear-gradient(120deg,var(--coral),#ff5a6e);color:#fff;
+  box-shadow:0 16px 36px -14px var(--coral);
+}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 22px 44px -14px var(--coral);}
+.btn-ghost{background:rgba(255,255,255,.07);color:#efeeff;border:1px solid rgba(255,255,255,.18);}
+.btn-ghost:hover{background:rgba(255,255,255,.13);transform:translateY(-3px);}
+.hero-stats{display:flex;gap:26px;margin-top:34px;flex-wrap:wrap;}
+.hero-stats .s b{font-family:'Space Grotesk';font-size:22px;display:block;}
+.hero-stats .s span{font-size:12.5px;color:#a9a5d0;font-family:'JetBrains Mono';letter-spacing:.04em;}
+
+/* floating card preview in hero */
+.preview-card{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:20px;padding:20px;
+  backdrop-filter:blur(8px);
+  box-shadow:0 30px 70px -30px rgba(0,0,0,.7);
+  transform:rotate(-1.4deg);
+}
+.preview-card .pc-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.preview-card .pc-head .lbl{font-family:'JetBrains Mono';font-size:11px;color:#b9b5e6;letter-spacing:.08em;}
+.pc-dot{width:9px;height:9px;border-radius:50%}
+.pc-title{font-family:'Space Grotesk';font-weight:600;font-size:15px;line-height:1.35;margin:0 0 12px;color:#fff;}
+.pc-tags{display:flex;flex-wrap:wrap;gap:7px;}
+.pc-tag{
+  font-family:'JetBrains Mono';font-size:11px;padding:5px 10px;border-radius:8px;
+  background:rgba(139,123,255,.16);border:1px solid rgba(139,123,255,.3);color:#d9d4ff;
+}
+
+/* ---------- reveal anim ---------- */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1);}
+.reveal.in{opacity:1;transform:none;}
+
+/* ---------- app section ---------- */
+.app{padding:64px 0;background:
+  radial-gradient(700px 380px at 100% 0%, rgba(109,92,255,.08), transparent 60%),
+  var(--paper);
+}
+.section-head{text-align:center;max-width:60ch;margin:0 auto 38px;}
+.section-head h2{font-size:clamp(26px,3.6vw,38px);margin:0 0 12px;}
+.section-head p{color:var(--muted);font-size:16px;line-height:1.6;margin:0;}
+
+.forge{
+  display:grid;grid-template-columns:1fr 1.1fr;gap:24px;align-items:start;
+}
+@media(max-width:880px){.forge{grid-template-columns:1fr}}
+.panel{
+  background:#fff;border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow-sm);padding:24px;
+}
+.panel h3{font-size:18px;margin:0 0 4px;display:flex;align-items:center;gap:9px;}
+.panel .sub{color:var(--muted);font-size:13px;margin:0 0 18px;}
+
+label.fld{display:block;margin-bottom:16px;}
+label.fld .lk{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+label.fld .lk b{font-size:13px;font-weight:600;}
+label.fld .lk .hint{font-size:11.5px;color:var(--muted);font-family:'JetBrains Mono';}
+input[type=text],textarea,select{
+  width:100%;padding:12px 13px;border:1.5px solid var(--line-strong);border-radius:11px;
+  font-family:inherit;font-size:14px;background:var(--paper);color:var(--ink);
+  transition:border-color .2s,box-shadow .2s,background .2s;resize:vertical;
+}
+textarea{min-height:96px;line-height:1.5;}
+input:focus,textarea:focus,select:focus{
+  outline:none;border-color:var(--violet);background:#fff;
+  box-shadow:0 0 0 4px rgba(109,92,255,.14);
+}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%235d5b6e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px;cursor:pointer;}
+
+/* marketplace toggle */
+.market{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+.market button{
+  padding:13px 8px;border-radius:12px;border:1.5px solid var(--line-strong);
+  background:var(--paper);font-weight:600;font-size:13px;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  transition:all .2s;
+}
+.market button .ic{font-size:18px;line-height:1}
+.market button .meta{font-size:9.5px;font-family:'JetBrains Mono';font-weight:400;opacity:.8;}
+.market button.active{
+  color:var(--ink);background:#fff;border-color:var(--violet);
+  box-shadow:0 0 0 3px rgba(109,92,255,.12),var(--shadow-sm);transform:translateY(-2px);
+}
+
+/* tone chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px;}
+.chip{
+  padding:7px 12px;border-radius:999px;border:1.5px solid var(--line-strong);
+  background:var(--paper);font-size:12.5px;font-weight:500;color:var(--muted);transition:all .18s;
+}
+.chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+.gen-row{display:flex;gap:10px;margin-top:4px;}
+.gen-row .btn{flex:1;}
+.btn-forge{
+  background:linear-gradient(120deg,var(--violet),#7b5cff);color:#fff;
+  box-shadow:0 14px 30px -12px var(--violet);
+}
+.btn-forge:hover{transform:translateY(-2px);box-shadow:0 20px 38px -12px var(--violet);}
+.btn-forge:disabled{opacity:.6;cursor:wait;transform:none;}
+
+/* ---------- output ---------- */
+.out-empty{
+  text-align:center;color:var(--muted);padding:36px 14px;
+}
+.out-empty .big{font-family:'Space Grotesk';font-size:17px;color:var(--ink);margin:10px 0 6px;}
+.out-empty svg{opacity:.5}
+
+.result-block{margin-bottom:22px;}
+.result-block .rb-head{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;
+}
+.rb-head h4{margin:0;font-size:12px;font-family:'JetBrains Mono';letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.copy-btn{
+  font-size:11px;font-family:'JetBrains Mono';padding:5px 10px;border-radius:8px;
+  background:var(--paper);border:1px solid var(--line-strong);color:var(--muted);transition:all .18s;
+}
+.copy-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink);}
+.copy-btn.done{background:var(--mint);color:#063b2c;border-color:var(--mint);}
+
+.title-out{
+  font-family:'Space Grotesk';font-weight:600;font-size:16px;line-height:1.42;
+  background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;position:relative;
+}
+.charbar{height:5px;border-radius:99px;background:var(--line);margin-top:11px;overflow:hidden;}
+.charbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--mint),var(--violet));transition:width .5s ease;}
+.charcount{font-family:'JetBrains Mono';font-size:11px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;}
+.charcount.over b{color:var(--coral);}
+
+.bullets{list-style:none;padding:0;margin:0;}
+.bullets li{
+  position:relative;padding:11px 12px 11px 34px;background:var(--paper);
+  border:1px solid var(--line);border-radius:11px;margin-bottom:8px;font-size:14px;line-height:1.5;
+}
+.bullets li::before{
+  content:"";position:absolute;left:13px;top:16px;width:9px;height:9px;border-radius:3px;
+  background:linear-gradient(135deg,var(--coral),var(--gold));
+}
+
+.tagcloud{display:flex;flex-wrap:wrap;gap:8px;}
+.tagcloud .tg{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono';font-size:12.5px;padding:7px 11px;border-radius:9px;
+  background:var(--paper);border:1.5px solid var(--line-strong);transition:all .18s;cursor:default;
+  animation:pop .4s backwards;
+}
+.tagcloud .tg:hover{border-color:var(--violet);transform:translateY(-2px);box-shadow:var(--shadow-sm);}
+.tagcloud .tg .rk{
+  font-size:10px;width:18px;height:18px;border-radius:5px;display:grid;place-items:center;
+  background:var(--ink);color:#fff;font-weight:700;
+}
+.tagcloud .tg.hot .rk{background:linear-gradient(135deg,var(--coral),var(--gold));color:#1a0f00;}
+.tagcloud .tg .sc{opacity:.55;font-size:10px;}
+@keyframes pop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+
+.desc-out{
+  background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;
+  font-size:14px;line-height:1.62;white-space:pre-wrap;
+}
+
+.gate-note{
+  font-size:12px;color:var(--muted);background:var(--paper-2);border:1px dashed var(--line-strong);
+  border-radius:10px;padding:10px 12px;margin-top:14px;line-height:1.5;
+}
+.gate-note b{color:var(--ink);}
+
+/* ---------- pro / key ---------- */
+.pro{padding:64px 0;background:linear-gradient(180deg,var(--paper),#ece9e1);}
+.pro-card{
+  background:linear-gradient(135deg,#15163a,#1f2152);color:#eceaff;border-radius:22px;
+  padding:34px;box-shadow:var(--shadow-lg);position:relative;overflow:hidden;
+}
+.pro-card::before{
+  content:"";position:absolute;width:340px;height:340px;right:-90px;top:-120px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,107,93,.4),transparent 70%);filter:blur(8px);
+}
+.pro-card .inner{position:relative;z-index:2;}
+.pro-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;}
+@media(max-width:760px){.pro-grid{grid-template-columns:1fr;gap:22px}}
+.pro-card h2{font-size:28px;margin:0 0 12px;}
+.pro-card .feat{list-style:none;padding:0;margin:16px 0 0;}
+.pro-card .feat li{display:flex;gap:11px;align-items:flex-start;margin-bottom:11px;font-size:14.5px;color:#d6d3f5;line-height:1.45;}
+.pro-card .feat li svg{flex:none;margin-top:2px;}
+.keybox{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:20px;}
+.keybox label{display:block;font-size:12px;font-family:'JetBrains Mono';letter-spacing:.06em;color:#b8b4e6;margin-bottom:8px;}
+.keybox input{
+  background:rgba(0,0,0,.25);border:1.5px solid rgba(255,255,255,.18);color:#fff;font-family:'JetBrains Mono';font-size:13px;
+}
+.keybox input:focus{border-color:var(--coral-2);box-shadow:0 0 0 4px rgba(255,107,93,.18);background:rgba(0,0,0,.32);}
+.keyrow{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;}
+.keystatus{font-size:12px;font-family:'JetBrains Mono';display:flex;align-items:center;gap:7px;color:#9f9bcf;}
+.keystatus .led{width:8px;height:8px;border-radius:50%;background:#6b6890;}
+.keystatus.on .led{background:var(--mint);box-shadow:0 0 8px var(--mint);}
+.aff{font-size:12px;color:#b8b4e6;margin-top:14px;line-height:1.5;}
+.aff a{color:var(--gold);font-weight:600;text-decoration:none;border-bottom:1px solid rgba(255,194,75,.4);}
+.aff a:hover{border-color:var(--gold);}
+.unlock-btn{
+  display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:11px;
+  background:linear-gradient(120deg,var(--gold),#ffb01f);color:#1a0f00;font-weight:700;font-size:13px;text-decoration:none;
+  transition:transform .2s,box-shadow .2s;
+}
+.unlock-btn:hover{transform:translateY(-2px);box-shadow:0 12px 26px -10px var(--gold);}
+
+/* ---------- how / faq ---------- */
+.how{padding:60px 0;}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+@media(max-width:760px){.steps{grid-template-columns:1fr}}
+.step{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--shadow-sm);transition:transform .25s;}
+.step:hover{transform:translateY(-5px);}
+.step .n{font-family:'JetBrains Mono';font-size:13px;color:var(--violet);font-weight:700;}
+.step h3{font-size:17px;margin:10px 0 7px;}
+.step p{color:var(--muted);font-size:14px;line-height:1.55;margin:0;}
+
+.faq{padding:24px 0 70px;}
+.faq details{
+  background:#fff;border:1px solid var(--line);border-radius:13px;padding:4px 18px;margin-bottom:11px;
+  box-shadow:var(--shadow-sm);
+}
+.faq summary{
+  cursor:pointer;list-style:none;padding:15px 0;font-weight:600;font-size:15.5px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .pm{font-family:'JetBrains Mono';color:var(--violet);transition:transform .2s;font-size:18px;}
+.faq details[open] summary .pm{transform:rotate(45deg);}
+.faq details p{color:var(--muted);line-height:1.6;font-size:14.5px;margin:0 0 16px;}
+
+/* ---------- footer ---------- */
+footer{background:var(--ink);color:#bdb9e0;padding:42px 0;}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center;}
+footer .brand{color:#fff;}
+footer .brand .mark::after{background:var(--ink);}
+footer .fnote{font-size:12.5px;line-height:1.6;max-width:52ch;}
+footer a{color:var(--gold);text-decoration:none;}
+
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120%);
+  background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:500;
+  box-shadow:var(--shadow-lg);z-index:200;transition:transform .35s cubic-bezier(.2,.8,.2,1);
+  display:flex;align-items:center;gap:9px;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none;}
+}
+:focus-visible{outline:3px solid var(--violet);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="wrap">
+    <div class="brand"><span class="mark"></span> ListingForge</div>
+    <div class="nav-links">
+      <a href="#forge">Generator</a>
+      <a href="#pro">Pro / AI</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a class="nav-cta" href="#forge">Forge a listing →</a>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <canvas id="constellation" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow reveal"><span class="dot"></span> SEO listings · Etsy · Amazon · eBay</span>
+        <h1 class="reveal">Turn a pile of product notes into a <span class="grad">listing that ranks.</span></h1>
+        <p class="lede reveal">Paste what you're selling. ListingForge maps it into a marketplace-tuned <b>title</b>, benefit-led <b>bullets</b>, and a ranked <b>keyword constellation</b> — sized to each platform's exact rules. Free, in your browser, no signup.</p>
+        <div class="hero-cta reveal">
+          <a class="btn btn-primary" href="#forge">Start forging — it's free</a>
+          <a class="btn btn-ghost" href="#pro">Add AI copy ↗</a>
+        </div>
+        <div class="hero-stats reveal">
+          <div class="s"><b>13</b><span>etsy tags, ranked</span></div>
+          <div class="s"><b>200ch</b><span>amazon titles</span></div>
+          <div class="s"><b>0</b><span>data sent to us</span></div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="preview-card" id="heroCard">
+          <div class="pc-head">
+            <span class="pc-dot" style="background:var(--coral)"></span>
+            <span class="pc-dot" style="background:var(--gold)"></span>
+            <span class="pc-dot" style="background:var(--mint)"></span>
+            <span class="lbl">ETSY · TITLE 132/140</span>
+          </div>
+          <p class="pc-title" id="heroTitle">Handmade Ceramic Coffee Mug, Speckled Stoneware, Cozy Gift for Coffee Lovers, Rustic Kitchen Decor</p>
+          <div class="pc-tags" id="heroTags"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ THE FORGE ============ -->
+<section class="app" id="forge">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2>The Forge</h2>
+      <p>Drop in your product. Pick a marketplace and a tone. Get a complete, copy-ready listing with keywords ranked by relevance — entirely in your browser.</p>
+    </div>
+
+    <div class="forge">
+      <!-- INPUT -->
+      <div class="panel reveal" id="inputPanel">
+        <h3>📦 Your product</h3>
+        <p class="sub">The more specific the notes, the sharper the listing. Photo notes work great.</p>
+
+        <div class="market" id="market">
+          <button data-mp="etsy" class="active"><span class="ic">🪡</span>Etsy<span class="meta">140 · 13 tags</span></button>
+          <button data-mp="amazon"><span class="ic">📦</span>Amazon<span class="meta">200 · 5 bullets</span></button>
+          <button data-mp="ebay"><span class="ic">🏷️</span>eBay<span class="meta">80 · specifics</span></button>
+        </div>
+
+        <label class="fld">
+          <span class="lk"><b>Product name / type</b><span class="hint">required</span></span>
+          <input type="text" id="pName" placeholder="e.g. Speckled ceramic coffee mug" autocomplete="off" />
+        </label>
+
+        <label class="fld">
+          <span class="lk"><b>Key features & details</b><span class="hint">one per line</span></span>
+          <textarea id="pFeatures" placeholder="Hand-thrown stoneware&#10;Holds 12 oz&#10;Speckled cream glaze&#10;Microwave & dishwasher safe&#10;Made in small batches"></textarea>
+        </label>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <label class="fld">
+            <span class="lk"><b>Materials</b></span>
+            <input type="text" id="pMaterials" placeholder="stoneware, ceramic" autocomplete="off" />
+          </label>
+          <label class="fld">
+            <span class="lk"><b>Ideal buyer / occasion</b></span>
+            <input type="text" id="pAudience" placeholder="coffee lovers, housewarming" autocomplete="off" />
+          </label>
+        </div>
+
+        <label class="fld">
+          <span class="lk"><b>Must-have keywords</b><span class="hint">optional, comma-sep</span></span>
+          <input type="text" id="pKeywords" placeholder="cozy gift, rustic kitchen, handmade" autocomplete="off" />
+        </label>
+
+        <div style="margin-bottom:14px">
+          <span class="lk" style="display:block;margin-bottom:8px"><b style="font-size:13px">Tone</b></span>
+          <div class="chips" id="tones">
+            <button class="chip active" data-tone="warm">Warm & handmade</button>
+            <button class="chip" data-tone="premium">Premium / luxe</button>
+            <button class="chip" data-tone="punchy">Punchy / direct</button>
+            <button class="chip" data-tone="playful">Playful</button>
+          </div>
+        </div>
+
+        <div class="gen-row">
+          <button class="btn btn-forge" id="genFree">⚒️ Forge listing</button>
+          <button class="btn btn-ghost" id="genAI" style="color:var(--ink);background:var(--paper);border-color:var(--line-strong)">✨ AI rewrite</button>
+        </div>
+        <p style="font-size:11.5px;color:var(--muted);margin:12px 0 0;text-align:center">Free build is instant & keyless. <a href="#pro" style="color:var(--violet)">AI rewrite</a> uses your own GLM key.</p>
+      </div>
+
+      <!-- OUTPUT -->
+      <div class="panel reveal" id="outputPanel">
+        <h3>📃 Your listing <span id="modeBadge" style="font-size:10px;font-family:'JetBrains Mono';font-weight:400;background:var(--paper-2);padding:3px 8px;border-radius:7px;color:var(--muted);margin-left:auto"></span></h3>
+        <p class="sub" id="outSub">Marketplace-ready output appears here.</p>
+
+        <div id="outEmpty" class="out-empty">
+          <svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 7l8-4 8 4v10l-8 4-8-4V7z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>
+          <div class="big">Nothing forged yet</div>
+          <div style="font-size:13.5px">Fill in your product on the left and hit <b>Forge listing</b>.</div>
+        </div>
+
+        <div id="outBody" style="display:none">
+          <!-- title -->
+          <div class="result-block">
+            <div class="rb-head"><h4>Optimized title</h4><button class="copy-btn" data-copy="title">copy</button></div>
+            <div class="title-out" id="outTitle"></div>
+            <div class="charbar"><i id="charFill"></i></div>
+            <div class="charcount" id="charCount"><span id="charNow">0</span><b id="charMax"></b></div>
+          </div>
+          <!-- bullets -->
+          <div class="result-block">
+            <div class="rb-head"><h4 id="bulletsLabel">Bullet highlights</h4><button class="copy-btn" data-copy="bullets">copy all</button></div>
+            <ul class="bullets" id="outBullets"></ul>
+          </div>
+          <!-- description -->
+          <div class="result-block">
+            <div class="rb-head"><h4>Description</h4><button class="copy-btn" data-copy="desc">copy</button></div>
+            <div class="desc-out" id="outDesc"></div>
+          </div>
+          <!-- tags -->
+          <div class="result-block">
+            <div class="rb-head"><h4 id="tagsLabel">Ranked keyword tags</h4><button class="copy-btn" data-copy="tags">copy all</button></div>
+            <div class="tagcloud" id="outTags"></div>
+          </div>
+          <div class="gate-note" id="gateNote"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRO ============ -->
+<section class="pro" id="pro">
+  <div class="wrap">
+    <div class="pro-card reveal">
+      <div class="inner pro-grid">
+        <div>
+          <span class="eyebrow" style="color:#d9d4ff;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)"><span class="dot"></span> PRO · BYO key</span>
+          <h2>Let AI write the copy that converts.</h2>
+          <p style="color:#cfcce8;line-height:1.6;font-size:15px;margin:0">The free Forge gives you a rock-solid SEO skeleton. Pro mode hands your structured product brief to <b>GLM-4.5</b> to write distinctive, on-brand copy and mine longer-tail keyword phrases — using <b>your own key</b>, straight from your browser to z.ai. We never see it.</p>
+          <ul class="feat">
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19d3a2" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg> AI-written title + bullets + description, tone-matched</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19d3a2" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg> Long-tail buyer-intent keyword discovery</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19d3a2" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg> Built-in quality gate — rejects bland, generic output</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19d3a2" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg> Key stored only in your browser — never sent to us</li>
+          </ul>
+        </div>
+        <div class="keybox">
+          <label for="apiKey">YOUR GLM API KEY (z.ai)</label>
+          <input type="password" id="apiKey" placeholder="paste sk-... here" autocomplete="off" spellcheck="false" />
+          <div class="keyrow">
+            <button class="unlock-btn" id="saveKey">🔓 Save key in browser</button>
+            <span class="keystatus" id="keyStatus"><span class="led"></span><span>no key</span></span>
+          </div>
+          <p class="aff">No key yet? <a href="https://z.ai/subscribe?ic=BWTG6TRYYQ" target="_blank" rel="noopener">Get a GLM key (5% off) ↗</a><br>
+          <span style="opacity:.7">Referral link — we may earn a small commission, at no extra cost to you. The free generator never needs a key.</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW ============ -->
+<section class="how" id="how">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2>From notes to ranked listing in 3 steps</h2>
+      <p>No accounts, no installs, no data leaving your machine.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><div class="n">01</div><h3>Brief the product</h3><p>Name, features, materials, ideal buyer. Even messy photo notes work — the parser extracts what matters.</p></div>
+      <div class="step reveal"><div class="n">02</div><h3>Pick marketplace & tone</h3><p>Etsy, Amazon, or eBay. Each has different title lengths, tag limits, and bullet conventions — ListingForge respects them all.</p></div>
+      <div class="step reveal"><div class="n">03</div><h3>Forge & copy</h3><p>Get a title, bullets, description, and ranked tags. Copy any block with one click. Want polish? Run the AI rewrite with your key.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="faq wrap" id="faq">
+  <div class="section-head reveal"><h2>Questions</h2></div>
+  <details class="reveal"><summary>Is ListingForge really free? <span class="pm">+</span></summary><p>Yes. The free tier runs 100% in your browser and builds a complete SEO listing skeleton — title, bullets, and ranked keyword tags — from your notes, with no key and no signup. Optional Pro mode lets you paste your own GLM key for AI-written copy.</p></details>
+  <details class="reveal"><summary>Does it follow each marketplace's rules? <span class="pm">+</span></summary><p>Yes. Etsy: 140-char titles and 13 tags (max 20 chars each). Amazon: 200-char titles, 5 bullets, plus backend search terms. eBay: 80-char titles and item-specific keyword phrases. The generator trims and ranks to fit each.</p></details>
+  <details class="reveal"><summary>Where does my data and API key go? <span class="pm">+</span></summary><p>Nowhere we can see. There's no backend. The free generator never leaves your browser. In Pro mode your key is stored only in your browser's localStorage and sent only to the official z.ai GLM endpoint over HTTPS.</p></details>
+  <details class="reveal"><summary>How are keywords ranked? <span class="pm">+</span></summary><p>ListingForge extracts single and multi-word phrases, scores them by frequency, position, specificity, and buyer-intent signals (gift, handmade, custom, etc.), removes stop-words and duplicates, then trims to each marketplace's tag rules so your strongest terms rank first.</p></details>
+  <details class="reveal"><summary>Will it write spammy, generic copy? <span class="pm">+</span></summary><p>No. The free build is structured from your real inputs — no filler. The AI rewrite uses a strict prompt and a quality gate that rejects bland, repetitive output and regenerates sharper, specific copy.</p></details>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div>
+      <div class="brand"><span class="mark"></span> ListingForge</div>
+      <p class="fnote" style="margin:14px 0 0">SEO listing generator for Etsy, Amazon & eBay sellers. 100% client-side — no signup, no tracking, no backend. Pro mode uses your own GLM key via <a href="https://z.ai/subscribe?ic=BWTG6TRYYQ" target="_blank" rel="noopener">z.ai</a> (referral link — we may earn a small commission).</p>
+    </div>
+    <div class="fnote" style="text-align:right">
+      <span class="mono" style="font-size:11px">Built for sellers, not spammers.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   ListingForge — client-side SEO listing engine
+   ============================================================ */
+(function(){
+'use strict';
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- marketplace rules ---------- */
+const MARKETS = {
+  etsy:   { name:'Etsy',   titleMax:140, tags:13, tagMax:20, bullets:5, sep:', ', tagLabel:'Etsy tags (13 max, ≤20 chars)' },
+  amazon: { name:'Amazon', titleMax:200, tags:7,  tagMax:50, bullets:5, sep:' ',  tagLabel:'Backend search terms' },
+  ebay:   { name:'eBay',   titleMax:80,  tags:12, tagMax:30, bullets:5, sep:' ',  tagLabel:'Item-specific keywords' }
+};
+
+let state = { mp:'etsy', tone:'warm' };
+
+/* ---------- NLP-ish helpers ---------- */
+const STOP = new Set(("a an the and or of for with to in on at is are this that these those your you our my his her its it i we they will can your made make makes very really just also more most some any all from by as be have has").split(' '));
+const INTENT = new Set("gift gifts handmade custom personalized vintage rustic boho cozy minimalist luxury premium organic natural eco sustainable unique cute aesthetic kawaii christmas wedding birthday anniversary housewarming bridesmaid mom dad her him kids baby".split(' '));
+
+function clean(s){ return (s||'').toLowerCase().replace(/[^a-z0-9\s-]/g,' ').replace(/\s+/g,' ').trim(); }
+function titleCase(s){
+  const small = new Set(['for','and','with','the','a','an','of','to','in','on','or']);
+  return s.split(' ').map((w,i)=>{
+    if(!w) return w;
+    if(i>0 && small.has(w)) return w;
+    return w.charAt(0).toUpperCase()+w.slice(1);
+  }).join(' ');
+}
+
+/* extract & score phrases */
+function extractKeywords(text, seeds){
+  const words = clean(text).split(' ').filter(Boolean);
+  const scores = new Map();
+  const bump = (k,v)=>{ if(!k) return; scores.set(k,(scores.get(k)||0)+v); };
+
+  // unigrams
+  words.forEach((w,i)=>{
+    if(STOP.has(w) || w.length<3) return;
+    let s = 2;
+    if(i < 6) s += 1.5;               // early-position weight
+    if(w.length >= 6) s += 1;         // specificity
+    if(INTENT.has(w)) s += 2.5;       // buyer-intent
+    bump(w, s);
+  });
+  // bigrams & trigrams
+  for(let n=2;n<=3;n++){
+    for(let i=0;i+n<=words.length;i++){
+      const gram = words.slice(i,i+n);
+      if(STOP.has(gram[0]) || STOP.has(gram[n-1])) continue;
+      if(gram.some(w=>w.length<2)) continue;
+      const phrase = gram.join(' ');
+      if(phrase.length<5) continue;
+      let s = n===2 ? 4 : 3.2;        // multiword = more searchable
+      if(i < 5) s += 1.2;
+      if(gram.some(w=>INTENT.has(w))) s += 2;
+      bump(phrase, s);
+    }
+  }
+  // seed boost
+  (seeds||[]).forEach(seed=>{
+    const c = clean(seed);
+    if(c) bump(c, 8);
+  });
+
+  return Array.from(scores.entries())
+    .map(([k,v])=>({k,v}))
+    .sort((a,b)=>b.v-a.v);
+}
+
+/* remove near-duplicate phrases (subset of a higher-ranked one) */
+function dedupe(list){
+  const out=[];
+  for(const item of list){
+    const dup = out.some(o=>{
+      const a=o.k, b=item.k;
+      return a===b || (a.includes(b) && b.split(' ').length<a.split(' ').length) ;
+    });
+    if(!dup) out.push(item);
+  }
+  return out;
+}
+
+/* ---------- gather input ---------- */
+function gather(){
+  const name = $('#pName').value.trim();
+  const features = $('#pFeatures').value.trim();
+  const materials = $('#pMaterials').value.trim();
+  const audience = $('#pAudience').value.trim();
+  const kws = $('#pKeywords').value.trim();
+  const featureLines = features.split('\n').map(s=>s.trim()).filter(Boolean);
+  const seeds = []
+    .concat(name? [name]:[])
+    .concat(materials? materials.split(',').map(s=>s.trim()):[])
+    .concat(audience? audience.split(',').map(s=>s.trim()):[])
+    .concat(kws? kws.split(',').map(s=>s.trim()):[]);
+  const corpus = [name, features, materials, audience, kws].join(' . ');
+  return { name, features, featureLines, materials, audience, kws, seeds, corpus };
+}
+
+/* ---------- FREE generation ---------- */
+function buildTitle(g, ranked){
+  const mp = MARKETS[state.mp];
+  const base = g.name ? titleCase(g.name) : titleCase(ranked[0]?.k || 'Product');
+  // pull distinct ranked phrases not already in base
+  const baseLow = base.toLowerCase();
+  const extras = [];
+  for(const r of ranked){
+    if(extras.length>=5) break;
+    if(baseLow.includes(r.k)) continue;
+    if(extras.some(e=>e.toLowerCase().includes(r.k)||r.k.includes(e.toLowerCase()))) continue;
+    extras.push(titleCase(r.k));
+  }
+  let parts;
+  if(state.mp==='etsy'){
+    parts = [base, ...extras]; // Etsy loves comma-stuffed keyword titles
+    let t = parts.join(', ');
+    while(t.length>mp.titleMax && parts.length>1){ parts.pop(); t=parts.join(', '); }
+    return t;
+  }
+  if(state.mp==='amazon'){
+    // brandless: Product + key attributes, space separated, descriptive
+    parts = [base, ...extras.slice(0,4)];
+    let t = parts.join(' – ');
+    while(t.length>mp.titleMax && parts.length>1){ parts.pop(); t=parts.join(' – '); }
+    return t;
+  }
+  // eBay: tight, 80 chars, front-loaded keywords
+  parts = [base, ...extras];
+  let t = parts.join(' ');
+  while(t.length>mp.titleMax && parts.length>1){ parts.pop(); t=parts.join(' '); }
+  return t.slice(0,mp.titleMax).trim();
+}
+
+const TONE_VERB = {
+  warm:    ['Lovingly crafted','Thoughtfully made','Designed to feel like home','Made in small batches'],
+  premium: ['Engineered for','Crafted to the highest standard','A refined take on','Premium-grade'],
+  punchy:  ['Built for','No fuss—just','Does exactly what you need','Straight-up'],
+  playful: ['Say hello to','Your new favorite','The little upgrade you didn’t know you needed','Meet']
+};
+const TONE_OPEN = {
+  warm:'Bring a little warmth into the everyday.',
+  premium:'Elevate the details that matter.',
+  punchy:'Everything you need, nothing you don’t.',
+  playful:'A small thing that makes the day better.'
+};
+
+function buildBullets(g, ranked){
+  const lines = g.featureLines.length ? g.featureLines : ranked.slice(0,5).map(r=>titleCase(r.k));
+  const verbs = TONE_VERB[state.tone];
+  return lines.slice(0,5).map((line,i)=>{
+    let l = line.replace(/^[-•*]\s*/,'').trim();
+    if(!l) return null;
+    const lead = l.charAt(0).toUpperCase()+l.slice(1);
+    // benefit framing
+    const benefit = i===0 ? `${verbs[0]} — ${lead.toLowerCase()}.`
+                          : `${lead}${/[.!?]$/.test(lead)?'':'.'}`;
+    return benefit;
+  }).filter(Boolean);
+}
+
+function buildDescription(g, ranked, bullets){
+  const buyer = g.audience ? g.audience.split(',')[0].trim() : (ranked.find(r=>INTENT.has(r.k))?.k || 'you');
+  const top = ranked.slice(0,3).map(r=>r.k).join(', ');
+  const open = TONE_OPEN[state.tone];
+  const intro = `${open} ${g.name?titleCase(g.name):'This piece'} is made for ${buyer}.`;
+  const body = bullets.length ? '\n\n' + bullets.map(b=>'• '+b).join('\n') : '';
+  const close = `\n\nPerfect as a ${g.audience? g.audience.split(',')[0].trim()+' ' : ''}gift, or a treat for yourself. Keywords woven in: ${top}.`;
+  return intro + body + close;
+}
+
+function buildTags(g, ranked){
+  const mp = MARKETS[state.mp];
+  let pool = dedupe(ranked).filter(r=>{
+    return r.k.length<=mp.tagMax && r.k.length>=3 && !/^\d+$/.test(r.k);
+  });
+  // prefer multi-word for etsy/ebay (better long-tail), ensure variety
+  const tags = [];
+  for(const r of pool){
+    if(tags.length>=mp.tags) break;
+    tags.push({ k:r.k, score:r.v });
+  }
+  const max = tags[0]?.score || 1;
+  return tags.map((t,i)=>({ ...t, rel: Math.round(40 + 60*(t.score/max)), rank:i+1 }));
+}
+
+function generateFree(){
+  const g = gather();
+  if(!g.name && !g.features){ toast('Add a product name or a few features first.'); return; }
+  const ranked = extractKeywords(g.corpus, g.seeds);
+  if(!ranked.length){ toast('Need a bit more detail to extract keywords.'); return; }
+  const title = buildTitle(g, ranked);
+  const bullets = buildBullets(g, ranked);
+  const desc = buildDescription(g, ranked, bullets);
+  const tags = buildTags(g, ranked);
+  render({ title, bullets, desc, tags }, 'free');
+}
+
+/* ---------- render ---------- */
+let LAST = null;
+function render(data, mode){
+  LAST = data;
+  const mp = MARKETS[state.mp];
+  $('#outEmpty').style.display='none';
+  $('#outBody').style.display='block';
+  $('#outSub').textContent = `${mp.name} · forged ${mode==='ai'?'with AI':'instantly'}`;
+  $('#modeBadge').textContent = mode==='ai' ? '✨ AI' : '⚒️ FREE';
+  $('#modeBadge').style.background = mode==='ai' ? 'rgba(109,92,255,.14)' : 'var(--paper-2)';
+
+  // title + char meter
+  $('#outTitle').textContent = data.title;
+  const len = data.title.length;
+  const pct = Math.min(100, Math.round(len/mp.titleMax*100));
+  $('#charFill').style.width = pct+'%';
+  $('#charNow').textContent = len+' chars';
+  $('#charMax').textContent = '/ '+mp.titleMax+' max';
+  $('#charCount').classList.toggle('over', len>mp.titleMax);
+
+  // bullets
+  $('#bulletsLabel').textContent = state.mp==='amazon' ? 'Amazon bullet points' : 'Bullet highlights';
+  $('#outBullets').innerHTML = data.bullets.map(b=>`<li>${esc(b)}</li>`).join('');
+
+  // desc
+  $('#outDesc').textContent = data.desc;
+
+  // tags
+  $('#tagsLabel').textContent = mp.tagLabel;
+  $('#outTags').innerHTML = data.tags.map((t,i)=>`
+    <span class="tg ${t.rel>=85?'hot':''}" style="animation-delay:${i*0.03}s">
+      <span class="rk">${t.rank}</span>${esc(t.k)}<span class="sc">${t.rel}%</span>
+    </span>`).join('');
+
+  // gate note
+  $('#gateNote').innerHTML = mode==='ai'
+    ? `<b>AI quality gate passed.</b> Copy written by GLM-4.5 from your brief, then checked for blandness & duplication. Always do a final human read before publishing.`
+    : `<b>Free skeleton ready.</b> This is built from your inputs with SEO structure. Want sharper, conversion-focused copy? <a href="#pro" style="color:var(--violet)">Run the AI rewrite</a> with your own key.`;
+
+  document.getElementById('outputPanel').scrollIntoView({behavior: reduceMotion?'auto':'smooth', block:'nearest'});
+}
+function esc(s){ return (s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+/* ---------- AI (Pro) generation ---------- */
+async function generateAI(){
+  const key = (localStorage.getItem('lf_glm_key')||'').trim();
+  if(!key){ toast('Add your GLM key in the Pro section first.'); document.getElementById('pro').scrollIntoView({behavior:'smooth'}); return; }
+  const g = gather();
+  if(!g.name && !g.features){ toast('Add product details first.'); return; }
+
+  const btn = $('#genAI');
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '✨ Writing…';
+
+  const mp = MARKETS[state.mp];
+  const sys = `You are a senior ${mp.name} listing copywriter and SEO strategist. You write SHARP, specific, conversion-focused copy. You NEVER write generic filler ("high quality", "great product", "perfect for everyone"). Every line earns its place. Return STRICT JSON only.`;
+  const user = `Write an SEO-optimized ${mp.name} listing.
+
+PRODUCT: ${g.name||'(infer from features)'}
+FEATURES:
+${g.featureLines.map(l=>'- '+l).join('\n')||'(none given)'}
+MATERIALS: ${g.materials||'n/a'}
+IDEAL BUYER / OCCASION: ${g.audience||'n/a'}
+MUST-INCLUDE KEYWORDS: ${g.kws||'n/a'}
+TONE: ${state.tone}
+
+RULES:
+- title: <= ${mp.titleMax} characters, front-load the strongest buyer search terms.
+- bullets: exactly ${mp.bullets} benefit-led lines, each specific to THIS product, no fluff.
+- description: 2-4 short paragraphs, vivid and specific, weaving keywords naturally.
+- tags: exactly ${mp.tags} ranked keyword phrases, each <= ${mp.tagMax} chars, ordered most-valuable first, favor long-tail buyer-intent phrases, no duplicates.
+
+Return ONLY this JSON (no markdown):
+{"title":"...","bullets":["...","..."],"description":"...","tags":["...","..."]}`;
+
+  try{
+    const res = await fetch('https://api.z.ai/api/paas/v4/chat/completions',{
+      method:'POST',
+      headers:{ 'authorization':'Bearer '+key, 'content-type':'application/json' },
+      body: JSON.stringify({
+        model:'glm-4.5-flash',
+        thinking:{type:'disabled'},
+        max_tokens:4096,
+        messages:[{role:'system',content:sys},{role:'user',content:user}]
+      })
+    });
+    if(!res.ok){
+      const txt = await res.text();
+      throw new Error('API '+res.status+': '+txt.slice(0,160));
+    }
+    const j = await res.json();
+    let content = j.choices?.[0]?.message?.content || '';
+    const parsed = parseAI(content);
+    if(!parsed) throw new Error('Could not parse AI response.');
+
+    // QUALITY GATE
+    const gate = qualityGate(parsed, mp);
+    if(!gate.ok){ toast('AI output failed quality gate ('+gate.why+') — using your inputs is safer. Try again.'); }
+
+    const tags = (parsed.tags||[]).slice(0,mp.tags).map((t,i,a)=>{
+      return { k:String(t).toLowerCase().slice(0,mp.tagMax), rel: Math.round(100 - i*(55/Math.max(1,a.length))), rank:i+1 };
+    });
+    render({
+      title: String(parsed.title||'').slice(0, mp.titleMax+0),
+      bullets: (parsed.bullets||[]).map(String).slice(0,mp.bullets),
+      desc: String(parsed.description||''),
+      tags
+    },'ai');
+    toast('AI listing forged ✨');
+  }catch(err){
+    toast('AI error: '+err.message);
+  }finally{
+    btn.disabled=false; btn.innerHTML=orig;
+  }
+}
+
+function parseAI(s){
+  if(!s) return null;
+  s = s.replace(/```json/gi,'').replace(/```/g,'').trim();
+  const a=s.indexOf('{'), b=s.lastIndexOf('}');
+  if(a<0||b<0) return null;
+  try{ return JSON.parse(s.slice(a,b+1)); }catch(e){ return null; }
+}
+
+function qualityGate(p, mp){
+  const text = (p.title+' '+(p.bullets||[]).join(' ')+' '+(p.description||'')).toLowerCase();
+  const banned = ['high quality','great product','best product','perfect for everyone','top notch','one stop','must have product','look no further'];
+  for(const b of banned){ if(text.includes(b)) return {ok:false, why:'generic phrasing'}; }
+  if(!p.title || p.title.length<10) return {ok:false, why:'weak title'};
+  if(!Array.isArray(p.bullets) || p.bullets.length<3) return {ok:false, why:'too few bullets'};
+  if(!Array.isArray(p.tags) || p.tags.length<5) return {ok:false, why:'too few tags'};
+  return {ok:true};
+}
+
+/* ---------- key management ---------- */
+function refreshKeyStatus(){
+  const k = localStorage.getItem('lf_glm_key');
+  const st = $('#keyStatus');
+  if(k){ st.classList.add('on'); st.querySelector('span:last-child').textContent='key saved ('+k.slice(0,4)+'…'+k.slice(-3)+')'; }
+  else { st.classList.remove('on'); st.querySelector('span:last-child').textContent='no key'; }
+}
+$('#saveKey').addEventListener('click',()=>{
+  const v = $('#apiKey').value.trim();
+  if(!v){ toast('Paste your GLM key first.'); return; }
+  localStorage.setItem('lf_glm_key', v);
+  $('#apiKey').value='';
+  refreshKeyStatus();
+  toast('Key saved in your browser only ✓');
+});
+
+/* ---------- copy ---------- */
+$$('[data-copy]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    if(!LAST) return;
+    const k=btn.dataset.copy; let text='';
+    if(k==='title') text=LAST.title;
+    else if(k==='bullets') text=LAST.bullets.map(b=>'• '+b).join('\n');
+    else if(k==='desc') text=LAST.desc;
+    else if(k==='tags') text=LAST.tags.map(t=>t.k).join(MARKETS[state.mp].sep);
+    navigator.clipboard.writeText(text).then(()=>{
+      btn.classList.add('done'); const o=btn.textContent; btn.textContent='copied ✓';
+      setTimeout(()=>{btn.classList.remove('done');btn.textContent=o;},1300);
+    });
+  });
+});
+
+/* ---------- controls ---------- */
+$('#market').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  $$('#market button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); state.mp=b.dataset.mp;
+  if(LAST) generateFree(); // re-fit to new marketplace
+});
+$('#tones').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  $$('#tones button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); state.tone=b.dataset.tone;
+});
+$('#genFree').addEventListener('click',generateFree);
+$('#genAI').addEventListener('click',generateAI);
+
+/* ---------- toast ---------- */
+let toT;
+function toast(msg){
+  const t=$('#toast'); t.innerHTML='<span>'+esc(msg)+'</span>'; t.classList.add('show');
+  clearTimeout(toT); toT=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+/* ---------- reveal on scroll ---------- */
+const io = new IntersectionObserver((es)=>{
+  es.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target);} });
+},{threshold:.12});
+$$('.reveal').forEach(el=>io.observe(el));
+
+/* ---------- hero preview rotating tags ---------- */
+const HERO_TAGS = ['ceramic mug','handmade gift','speckled stoneware','cozy kitchen','coffee lover gift','rustic decor','small batch','12oz mug'];
+function paintHeroTags(){
+  $('#heroTags').innerHTML = HERO_TAGS.slice(0,6).map(t=>`<span class="pc-tag">${t}</span>`).join('');
+}
+paintHeroTags();
+
+/* ============================================================
+   HERO: keyword constellation canvas
+   ============================================================ */
+const canvas = $('#constellation');
+const ctx = canvas.getContext('2d');
+const WORDS = ['title','tags','SEO','etsy','amazon','ebay','keyword','handmade','gift','rank','bullet','vintage','custom','cozy','search','long-tail','convert','boho','listing','glaze','traffic','rustic','premium','sell'];
+let nodes=[], W=0, H=0, mouse={x:-999,y:-999}, raf;
+
+function sizeCanvas(){
+  const r = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  W=r.width; H=r.height;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+function initNodes(){
+  const count = Math.max(14, Math.min(26, Math.floor(W/52)));
+  nodes = [];
+  for(let i=0;i<count;i++){
+    nodes.push({
+      x:Math.random()*W, y:Math.random()*H,
+      vx:(Math.random()-.5)*0.22, vy:(Math.random()-.5)*0.22,
+      word: WORDS[i%WORDS.length],
+      r: 2+Math.random()*2.5,
+      hue: i%3
+    });
+  }
+}
+const PALETTE = ['#8b7bff','#ff8a7e','#19d3a2'];
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  // links
+  for(let i=0;i<nodes.length;i++){
+    for(let j=i+1;j<nodes.length;j++){
+      const a=nodes[i], b=nodes[j];
+      const dx=a.x-b.x, dy=a.y-b.y; const d=Math.hypot(dx,dy);
+      if(d<150){
+        const o=(1-d/150)*0.30;
+        ctx.strokeStyle='rgba(150,140,255,'+o+')';
+        ctx.lineWidth=0.7;
+        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+      }
+    }
+  }
+  // nodes + words
+  ctx.font='600 11px "JetBrains Mono", monospace';
+  for(const n of nodes){
+    // mouse repel
+    const mdx=n.x-mouse.x, mdy=n.y-mouse.y; const md=Math.hypot(mdx,mdy);
+    if(md<120){ n.x += (mdx/md)*1.6; n.y += (mdy/md)*1.6; }
+    n.x+=n.vx; n.y+=n.vy;
+    if(n.x<0||n.x>W) n.vx*=-1;
+    if(n.y<0||n.y>H) n.vy*=-1;
+    n.x=Math.max(0,Math.min(W,n.x)); n.y=Math.max(0,Math.min(H,n.y));
+
+    const col = PALETTE[n.hue];
+    ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+    ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=10; ctx.fill(); ctx.shadowBlur=0;
+    ctx.fillStyle='rgba(225,222,255,0.55)';
+    ctx.fillText(n.word, n.x+7, n.y+3);
+  }
+  raf=requestAnimationFrame(draw);
+}
+function startHero(){
+  sizeCanvas(); initNodes();
+  if(reduceMotion){ draw(); cancelAnimationFrame(raf); return; } // single static frame
+  cancelAnimationFrame(raf); draw();
+}
+canvas.addEventListener('mousemove',e=>{ const r=canvas.getBoundingClientRect(); mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top; });
+canvas.addEventListener('mouseleave',()=>{ mouse.x=-999; mouse.y=-999; });
+let rT; window.addEventListener('resize',()=>{ clearTimeout(rT); rT=setTimeout(startHero,180); });
+startHero();
+refreshKeyStatus();
+
+/* prefill demo on first load for instant wow */
+if(!$('#pName').value){
+  $('#pName').value='Speckled ceramic coffee mug';
+  $('#pFeatures').value='Hand-thrown stoneware\nHolds 12 oz\nSpeckled cream glaze\nMicrowave & dishwasher safe\nMade in small batches';
+  $('#pMaterials').value='stoneware, ceramic';
+  $('#pAudience').value='coffee lovers, housewarming';
+  $('#pKeywords').value='cozy gift, rustic kitchen, handmade';
+}
+
+})();
+</script>
+</body>
+</html>
